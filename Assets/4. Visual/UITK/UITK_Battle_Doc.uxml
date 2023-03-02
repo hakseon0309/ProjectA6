@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="body" style="flex-grow: 1; flex-direction: row; align-items: center;">
+        <ui:VisualElement name="player" style="flex-direction: column; height: 50%; width: 50%; align-items: center; justify-content: center;">
+            <ui:VisualElement name="playerCard" style="align-items: center; justify-content: center; width: 350px; height: 595px; flex-direction: column; background-color: rgb(100, 100, 100);" />
+        </ui:VisualElement>
+        <ui:VisualElement name="enemy" style="width: 50%; height: 50%; flex-direction: column; align-items: center; justify-content: center;">
+            <ui:VisualElement name="enemyCard" style="align-items: center; justify-content: center; width: 350px; height: 595px; flex-direction: column;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
