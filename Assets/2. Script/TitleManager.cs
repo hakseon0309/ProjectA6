@@ -9,12 +9,17 @@ using UnityEngine.SceneManagement;
 public class TitleManager : MonoBehaviour
 {
     public Image titleBackground;
+    public Image selectBackground;
     public TMP_Text touchToStart;
     private bool canStart;
 
     private void Start()
     {
         touchToStart.alpha = 0f;
+
+        Color color = selectBackground.GetComponent<Image>().color;
+        color.a = 0f; 
+
         titleBackground.transform.DOScale(1.6f,60f);
         MySceneManager.Instance.SceneFadeIn(3f);
         touchToStart.DOFade(1f,1f).SetDelay(3f)
