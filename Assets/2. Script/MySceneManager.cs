@@ -1,11 +1,14 @@
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using TMPro;
 
 public class MySceneManager : MonoBehaviour
 {
+    // 싱글톤
     private static MySceneManager instance = null;
-
     private void Awake()
     {
         if (instance == null)
@@ -18,7 +21,6 @@ public class MySceneManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
     public static MySceneManager Instance
     {
         get
@@ -31,32 +33,37 @@ public class MySceneManager : MonoBehaviour
         }
     }
 
-    public CanvasGroup FadeImg;
 
-    public void ChangeScene(float fadeDuration)
-    {
-        FadeImg.DOFade(1f, fadeDuration)
-        .OnStart( () =>
-        {
-            // 아래 레이어 레이캐스트 블락
-            FadeImg.blocksRaycasts = true;
-        })
-        .OnComplete( () =>
-        {
-            // 로딩화면 띄우거나, 씬 로드 하거나..
-        });
-    }
+
+    public CanvasGroup fadeImg;
+    public float shadowFade;
 
     public void SceneFadeIn(float fadeDuration)
     {
-        FadeImg.alpha = 1f;
-        FadeImg.DOFade(0f, fadeDuration);
+        fadeImg.gameObject.SetActive(true);
+        fadeImg.alpha = 1f;
+        fadeImg.DOFade(0f, fadeDuration)
+        .OnComplete( () => {
+            fadeImg.gameObject.SetActive(false);
+        });
     }
-
     public void SceneFadeOut(float fadeDuration)
     {
-        FadeImg.alpha = 0f;
-        FadeImg.DOFade(1f, fadeDuration);
+        fadeImg.gameObject.SetActive(true);
+        fadeImg.alpha = 0f;
+        fadeImg.DOFade(1f, fadeDuration);
     }
-
+    public void BackgroundShadowStart(float fadeDuration)
+    {
+        fadeImg.gameObject.SetActive(true);
+        fadeImg.alpha = 0f;
+        fadeImg.DOFade (shadowFade, fadeDuration);
+    }
+    public void BackgroundShadowEnd(float fadeDuration)
+    {
+        fadeImg.DOFade (0f, fadeDuration)
+        .OnComplete( () => {
+            fadeImg.gameObject.SetActive(false);
+        });
+    }    
 }

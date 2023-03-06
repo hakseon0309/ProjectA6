@@ -5,10 +5,10 @@ using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 
-public class GameManager : MonoBehaviour
+public class Player : MonoBehaviour
 {
     // 싱글톤
-    private static GameManager instance = null;
+    private static Player instance = null;
     private void Awake()
     {
         if (instance == null)
@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    public static GameManager Instance
+    public static Player Instance
     {
         get
         {
@@ -32,4 +32,15 @@ public class GameManager : MonoBehaviour
             return instance;
         }
     }
+
+
+
+    public int hp;
+    public int mp;
+    public int power;
+    public int drawCount;
+
+    public GameObject playerCharacterCard;
+
+    public List<GameObject> playerDeck;
 }
