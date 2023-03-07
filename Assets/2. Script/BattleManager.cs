@@ -97,7 +97,7 @@ public class BattleManager : MonoBehaviour
         // int orderInLayer = 0;
         for ( int i = 0; i < playerDeckCount; i++ )
         {
-            var card = Instantiate( Player.Instance.playerDeck[0], cardsToDraw.transform );
+            var card = Instantiate( Player.Instance.playerDeck[i], cardsToDraw.transform );
             card.transform.localScale = Vector3.zero;
             Color color = card.GetComponentInChildren<SpriteRenderer>().color;
             color.a = 0f;
@@ -113,14 +113,24 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    public void DrawingCardSystem( int count )
+
+    ////////// 카드 드로우 종합 시스템
+
+    // 전역 변수
+    public float dotweenSec = 1f;
+
+
+    // 카드 드로우 최상위 함수
+    // 매개변수 count만큼의 카드를 드로우
+    public void CardDraw( int count )
     {
-        // 조건 분기 1: 뽑을 카드 더미가 뽑아야할 카드보다 같거나 많음
+        // 만약 뽑을 카드 더미가 같거나 많으면
         if ( cardsToDraw.childCount >= count )
         {
+            // 그냥 뽑아
             DrawRandomCards( count );
         }
-        // 조건 분기 2: 뽑을 카드 더미보다 뽑아야할 카드가 많음
+        // 만약 뽑을 카드 더미가 부족하면
         else
         {
             // diff만큼 후에 추가로 뽑을거임
@@ -135,24 +145,26 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    // 카드 드로우 모듈 함수 1
+    // 매개변수 count만큼의 카드를 랜덤 드로우
     public void DrawRandomCards( int count )
     {
         for ( int i = 0; i < count; i++ )
         {
             if ( cardsToDraw.childCount == 0 )
             {
-                Debug.Log("CardsToDraw에 뽑을 카드가 없음");
+                Debug.Log( "CardsToDraw에 뽑을 카드가 없음" );
                 break;
             }
-            int ctd = cardsToDraw.childCount;
-            int randomIndex = Random.Range(0, ctd);
+            int randomIndex = Random.Range(0, cardsToDraw.childCount);
             var card = cardsToDraw.GetChild( randomIndex ).gameObject;
             card.transform.parent = addedCards.transform;
-            card.transform.DOMove( addedCards.position, 1f );
-            card.transform.DOScale( 1f, 1f );
-            card.GetComponentInChildren<SpriteRenderer>().DOFade( 1f, 1f );
+            card.transform.DOMove( addedCards.position, dotweenSec );
+            card.transform.DOScale( 1f, dotweenSec );
+            card.GetComponentInChildren<SpriteRenderer>().DOFade( 1f, 1f )
+            .OnComplete( () => {} );
         }
-        Debug.Log("DrawR !");
+        Debug.Log( "DrawRandomCards 종료" );
     }
 
     // public void DrawNoRandomCards( int count )

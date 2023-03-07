@@ -47,10 +47,6 @@ MonoBehaviour:
   hp: 100
   mp: 100
   power: 10
-  drawCount: 0
+  drawCount: 3
   playerCharacterCard: {fileID: 2289730257693874605, guid: 168acb99d0c124eb7a14b229929999c2, type: 3}
-  playerCardDeck:
-  - {fileID: 2289730257693874605, guid: 79b55e1dccfd14005869121e02b2c5ce, type: 3}
-  - {fileID: 2289730257693874605, guid: 01a375ff3c23a4e5fa041111dcdaed05, type: 3}
-  - {fileID: 2289730257693874605, guid: 2c87aff76f88b4506901c0f5969de84d, type: 3}
-  - {fileID: 2289730257693874605, guid: 1ba76a7f8f8814e3295f7b3d1d3721c7, type: 3}
+  playerDeck: []
