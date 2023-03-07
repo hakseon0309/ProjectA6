@@ -4,48 +4,213 @@ using UnityEngine;
 using DG.Tweening;
 using TMPro;
 
+// 전투 시스템을 관리하는 클래스
 public class BattleManager : MonoBehaviour
 {
-    public TMP_Text myTurn;
-    public TMP_Text enemyTurn;
+    // 페이드 인/아웃 등 트랜지션에서 초 간격을 설정할 변수
+    public float seqIntervalReady;            // '씬 시작 -> 페이드 인' 후에 처음 기다릴 시간
+    public float seqIntervalBetween;          // 두트윈 시퀀스 사이 간격
+    
+    // 텍스트 변수
+    public TMP_Text myTurn;                   // My Turn 텍스트
+    public TMP_Text enemyTurn;                // Enemy Turn 텍스트
 
-    public float seqIntervalReady;
-    public float seqIntervalBetween;
+    public Transform cardsToDraw;
+    public Transform addedCards;
+    public Transform discardedCards;
+    public Transform removedCards;
 
-    public List<GameObject> drawedCards;
-    public List<GameObject> usedCards;
-    public List<GameObject> extinctedCards;
+    // 테스트로 추가할 카드
+    public GameObject card03;
+    public GameObject card04;
+    public GameObject card05;
+    public GameObject card06;
 
-    public Transform pos_Spawn;
-    public Transform pos_Player;
-    public Transform pos_Enemy;
-    public Transform pos_Hand;
+    // 현재 상태
+    public bool canControl = false;           // 조작 가능한 상태인지 확인
+    public bool playerTurn = false;           // 플레이어턴 상태인지 확인
 
     private void Awake()
     {
-        ReadyToBattle();
+        // // 씬 시작 후 기본 화면 진행
+        // ReadyToBattle();
+        SetUp();
     }
 
-    void Start()
+    private void Start()
     {
+
+    }
+
+    private void Update()
+    {
+
+    }
+
+    // sec 간격으로 카드를 생성하고 손으로 가져옴
+    // public IEnumerator MoveToHandCards(float sec)
+    // {
+    //     int temp = drawedCards.Count;
+    //     for ( int i = temp - 1; i >= 0; i-- )
+    //     {
+    //         GameObject card = Instantiate(drawedCards[i], pos_Spawn.position, Quaternion.identity);
+    //         list_HandedCards.Add(drawedCards[i]);
+    //         drawedCards.Remove(drawedCards[i]);
+    //         card.transform.parent = handedCards.transform;
+    //         card.transform.DOMove(pos_Hand.position, 1f);
+    //         yield return new WaitForSeconds(sec);
+    //     }
+    // }
+
+    // public void MoveToUsedCards()
+    // {
+    //     foreach (Transform child in handedCards)
+    //     {
+    //         if ( child.name.Contains("Card") )
+    //         {
+    //             usedCards.Add(child.gameObject);
+    //             child.gameObject.transform.DOMove(pos_Used.position, 1f)
+    //             .OnComplete ( () => {Destroy(child.gameObject);});
+    //         }
+    //     }
+
+
+    //     int temp = drawedCards.Count;
+    //     for (int i = 0; i < temp; i++)
+    //     {
+    //         GameObject card = drawedCards[0];
+    //         usedCards.Add(card);
+    //         drawedCards.RemoveAt(0);
+    //     }
+    // }
+
+    // PlayerDeck의 모든 카드를 cardsToDraw의 자식으로 생성
+    // 동시에 크기와 알파값을 0으로
+
+
+
+    ///////////////////////// 오브젝트 풀링 타입 카드 순환 시스템
+
+    public void SetUp()
+    {
+        int playerDeckCount = Player.Instance.playerDeck.Count;
+        // int orderInLayer = 0;
+        for ( int i = 0; i < playerDeckCount; i++ )
+        {
+            var card = Instantiate( Player.Instance.playerDeck[0], cardsToDraw.transform );
+            card.transform.localScale = Vector3.zero;
+            Color color = card.GetComponentInChildren<SpriteRenderer>().color;
+            color.a = 0f;
+            card.transform.parent = cardsToDraw.transform;
+
+            // // 카드들의 Sorting
+            // Renderer renderer = card.GetComponentInChildren<Renderer>();
+            // if (renderer != null)
+            // {
+            //     renderer.sortingOrder = orderInLayer;
+            // }
+            // orderInLayer += 10;
+        }
+    }
+
+    public void DrawingCardSystem( int count )
+    {
+        // 조건 분기 1: 뽑을 카드 더미가 뽑아야할 카드보다 같거나 많음
+        if ( cardsToDraw.childCount >= count )
+        {
+            DrawRandomCards( count );
+        }
+        // 조건 분기 2: 뽑을 카드 더미보다 뽑아야할 카드가 많음
+        else
+        {
+            // diff만큼 후에 추가로 뽑을거임
+            int diff = count - cardsToDraw.childCount;
+            int temp = cardsToDraw.childCount;
+            // 일단 있는 카드 다 뽑음
+            DrawRandomCards( temp );
+            // 사용한 카드 다 가져옴
+            CycleDeck();
+            // 나머지 뽑자
+            DrawRandomCards( diff );
+        }
+    }
+
+    public void DrawRandomCards( int count )
+    {
+        for ( int i = 0; i < count; i++ )
+        {
+            if ( cardsToDraw.childCount == 0 )
+            {
+                Debug.Log("CardsToDraw에 뽑을 카드가 없음");
+                break;
+            }
+            int ctd = cardsToDraw.childCount;
+            int randomIndex = Random.Range(0, ctd);
+            var card = cardsToDraw.GetChild( randomIndex ).gameObject;
+            card.transform.parent = addedCards.transform;
+            card.transform.DOMove( addedCards.position, 1f );
+            card.transform.DOScale( 1f, 1f );
+            card.GetComponentInChildren<SpriteRenderer>().DOFade( 1f, 1f );
+        }
+        Debug.Log("DrawR !");
+    }
+
+    // public void DrawNoRandomCards( int count )
+    // {
+    //     int temp = cardsToDraw.childCount;
+    //     for ( int i = temp - 1; i > count; i-- )
+    //     {
+    //         var card = cardsToDraw.GetChild( i ).gameObject;
+    //         card.transform.parent = addedCards.transform;
+    //         card.transform.DOMove( addedCards.position, 1f );
+    //         card.transform.DOScale( 1f, 1f );
+    //         card.GetComponentInChildren<SpriteRenderer>().DOFade( 1f, 1f );
+    //     }
+    // }
+
+    public void DiscardCardsAll()
+    {
+        int addedCardsCount = addedCards.childCount;
+        for ( int i = 0; i < addedCardsCount; i++ )
+        {
+            var card = addedCards.GetChild( 0 ).gameObject;
+            card.transform.parent = discardedCards.transform;
+            card.transform.DOMove( discardedCards.position, 1f );
+            card.transform.DOScale( 0f, 1f );
+            card.GetComponentInChildren<SpriteRenderer>().DOFade( 0f, 1f );
+        }
+        Debug.Log("Discard !");
+    }
+
+    public void RemovedCardsAll()
+    {
+        int addedCardsCount = addedCards.childCount;
+        for ( int i = 0; i < addedCardsCount; i++ )
+        {
+            var card = addedCards.GetChild( 0 ).gameObject;
+            card.transform.parent = removedCards.transform;
+            card.transform.DOMove( removedCards.position, 1f );
+            card.transform.DOScale( 0f, 1f );
+            card.GetComponentInChildren<SpriteRenderer>().DOFade( 0f, 1f );
+        }
+        Debug.Log("Remove !");
+    }
+
+    public void CycleDeck()
+    {
+        if ( discardedCards.childCount != 0 )
+        {
+            int discardedCardsCount = discardedCards.childCount;
+            for ( int i = 0; i < discardedCardsCount; i++ )
+            {
+                var card = discardedCards.GetChild( 0 ).gameObject;
+                card.transform.parent = cardsToDraw.transform;
+                card.transform.position = cardsToDraw.position;
+            }
+            Debug.Log("Cycle !");
+        }
+        Debug.Log("카드가 더 없어서 못섞어 !");
         
-    }
-
-    void Update()
-    {
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            DrawCards(Player.Instance.drawCount);
-        }
-        if (Input.GetButtonDown("Jump"))
-        {
-            EndTurn();
-        }
-        if (Input.GetButtonDown("Fire2"))
-        {
-            MoveCards();
-        }
     }
 
     public void Shuffle<T>(List<T> list)
@@ -58,82 +223,26 @@ public class BattleManager : MonoBehaviour
             list[k] = value;  
         }
     }
-    public void DrawCards(int count)
+    
+
+    // 테스트용 버튼에 들어갈 함수들
+    public void TestAddCardToCardsToDraw()
     {
-        // 현재 플레이어덱의 카드 갯수가 뽑아야할 카드 갯수보다 같거나 많으면
-        if (Player.Instance.playerDeck.Count >= count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                GameObject card = Player.Instance.playerDeck[0];
-                drawedCards.Add(card);
-                Player.Instance.playerDeck.RemoveAt(0);
-            }
-            ///// 두트윈
-        }
-
-        // 현재 플레이어덱의 카드 갯수가 뽑아야할 카드 갯수보다 적으면
-        else if (Player.Instance.playerDeck.Count < count)
-        {
-            // 후에 덱 순환 후 추가 드로우할 갯수 저장
-            int diff = count - Player.Instance.playerDeck.Count;
-
-            // 일단 남아있는 플레이어덱 카드 갯수만큼 드로우
-            int tempPlayerDeck = Player.Instance.playerDeck.Count;
-            for (int i = 0; i < tempPlayerDeck; i++)
-            {
-                GameObject card = Player.Instance.playerDeck[0];
-                drawedCards.Add(card);
-                Player.Instance.playerDeck.RemoveAt(0);
-            }
-            ///// 두트윈
-
-            // 사용한 카드들을 플레이어덱으로 이동
-            int tempUsedCards = usedCards.Count;
-            for (int i = 0; i < tempUsedCards; i++)
-            {
-                GameObject card = usedCards[0];
-                Player.Instance.playerDeck.Add(card);
-                usedCards.RemoveAt(0);
-            }
-            // Player.Instance.playerDeck을 셔플
-            Shuffle(Player.Instance.playerDeck);
-
-            // 덱 순환 완료 후 부족했던만큼 추가 드로우
-            for (int i = 0; i < diff; i++)
-            {
-                if (Player.Instance.playerDeck.Count == 0)
-                {
-                    Debug.Log("카드 없음");
-                    break;
-                }
-                GameObject card = Player.Instance.playerDeck[0];
-                drawedCards.Add(card);
-                Player.Instance.playerDeck.RemoveAt(0);
-            }
-            ///// 두트윈
-        }
+        var card = Instantiate( card03, cardsToDraw.transform );
+        card.transform.parent = cardsToDraw.transform;
+    }
+    public void TestAddCardToDiscardedCards()
+    {
+        var card = Instantiate( card03, discardedCards.transform );
+        card.transform.parent = discardedCards.transform;
+    }
+    public void TestAddCardToRemovedCards()
+    {
+        var card = Instantiate( card03, removedCards.transform );
+        card.transform.parent = removedCards.transform;
     }
 
-    public void MoveCards()
-    {
-        for ( int i = 0; i < drawedCards.Count; i++ )
-        {
-            GameObject card = Instantiate(drawedCards[i], pos_Spawn.position, Quaternion.identity);
-            card.transform.SetParent(pos_Hand, false);
-        }
-    }
 
-    public void EndTurn()
-    {
-        int temp = drawedCards.Count;
-        for (int i = 0; i < temp; i++)
-        {
-            GameObject card = drawedCards[0];
-            usedCards.Add(card);
-            drawedCards.RemoveAt(0);
-        }
-    }
     public void ReadyToBattle()
     {
         Sequence seq = DOTween.Sequence();
