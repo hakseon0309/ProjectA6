@@ -53,17 +53,18 @@ public class MySceneManager : MonoBehaviour
         fadeImg.alpha = 0f;
         fadeImg.DOFade(1f, fadeDuration);
     }
-    public void BackgroundShadowStart(float fadeDuration)
-    {
-        fadeImg.gameObject.SetActive(true);
-        fadeImg.alpha = 0f;
-        fadeImg.DOFade (shadowFade, fadeDuration);
-    }
-    public void BackgroundShadowEnd(float fadeDuration)
-    {
-        fadeImg.DOFade (0f, fadeDuration)
-        .OnComplete( () => {
-            fadeImg.gameObject.SetActive(false);
-        });
-    }    
+    
+    // public void BackgroundShadowStart(float fadeDuration)
+    // {
+    //     fadeImg.gameObject.SetActive(true);
+    //     fadeImg.alpha = 0f;
+    //     fadeImg.DOFade (shadowFade, fadeDuration);
+    // }
+    // public void BackgroundShadowEnd(float fadeDuration)
+    // {
+    //     fadeImg.DOFade (0f, fadeDuration)
+    //     .OnComplete( () => {
+    //         fadeImg.gameObject.SetActive(false);
+    //     });
+    // }    
 }
