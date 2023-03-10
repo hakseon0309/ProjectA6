@@ -366,7 +366,7 @@ GameObject:
   - component: {fileID: 3134629121472741599}
   - component: {fileID: 1802152546467518775}
   - component: {fileID: 7937573706793948957}
-  - component: {fileID: 7293409066355640190}
+  - component: {fileID: 5292156762399243207}
   m_Layer: 0
   m_Name: Card01_Attack
   m_TagString: Untagged
@@ -431,7 +431,7 @@ SortingGroup:
   m_SortingLayerID: 1405810103
   m_SortingLayer: 1
   m_SortingOrder: 0
---- !u!114 &7293409066355640190
+--- !u!114 &5292156762399243207
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
