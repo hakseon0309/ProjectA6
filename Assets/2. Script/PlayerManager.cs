@@ -35,6 +35,8 @@ public class PlayerManager : MonoBehaviour
 
 
 
+
+
     public int hp;
     public int mp;
     public int power;

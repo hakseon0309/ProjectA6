@@ -42,329 +42,281 @@ public class CardManager : MonoBehaviour
 
 
 
-    // CardManager
-
     [Header("Transform Position")]
-    public Transform cardsToDraw;
-    public Transform addedCards;
-    public Transform discardedCards;
-    public Transform removedCards;
-    public Transform addedCardsLeft;
-    public Transform addedCardsRight;
+    public Transform deck;
+    public Transform hand;
+    public Transform discard;
+    public Transform extinct;
 
-    // SetUp
-    public void DeckSetUp()
+    // 1장의 카드를 드로우 합니다.
+    // 매개변수 way 0 = 가장 위에 있는 카드를 드로우
+    // 매개변수 way 1 = 가장 아래에 있는 카드를 드로우
+    // 매개변수 way 2 = 랜덤한 카드를 드로우
+    public void Card_Draw(int way)
+    {
+
+        Transform fromTr = deck;
+        int count = fromTr.childCount;
+        Transform toTr = hand;
+        GameObject card = null;
+        int randomIndex = Random.Range(0, count);
+        List<Vector3> cardsPos = new List<Vector3>();
+
+        if (count != 0)
+        {
+            switch (way)
+            {
+                case 0: {card = fromTr.GetChild(count-1).gameObject;} 
+                        {card.transform.parent = toTr.transform;} break;
+                case 1: {card = fromTr.GetChild(0).gameObject;} 
+                        {card.transform.parent = toTr.transform;} break;                
+                case 2: {card = fromTr.GetChild(randomIndex).gameObject;}
+                        {card.transform.parent = toTr.transform;} break;
+            }
+            Card_Sorting();
+            cardsPos = Card_Alignment();
+            for (int i = 0; i < count; i++)
+            {
+                // Card_Move(card, cardsPos[i]);
+            }
+        }
+        else
+        {
+            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
+        }
+    }
+
+    public void Deck_SetUp()
     {
         int playerDeckCount = PlayerManager.Instance.playerDeck.Count;
         for (int i = 0; i < playerDeckCount; i++)
         {
-            var card = Instantiate(PlayerManager.Instance.playerDeck[i], cardsToDraw.transform);
+            var card = Instantiate(PlayerManager.Instance.playerDeck[i], deck.transform);
             card.transform.localScale = Vector3.zero;
-            card.transform.parent = cardsToDraw.transform;
+            card.transform.parent = deck.transform;
         }
     }
+
     public void DeckCycle()
     {
-        if ( discardedCards.childCount != 0 )
+        if ( discard.childCount != 0 )
         {
-            int discardedCardsCount = discardedCards.childCount;
-            for ( int i = 0; i < discardedCardsCount; i++ )
+            int discardCount = discard.childCount;
+            for ( int i = 0; i < discardCount; i++ )
             {
-                GameObject card = discardedCards.GetChild(0).gameObject;
-                card.transform.parent = cardsToDraw.transform;
-                card.transform.position = cardsToDraw.position;
+                GameObject card = discard.GetChild(0).gameObject;
+                card.transform.parent = deck.transform;
+                card.transform.position = deck.position;
             }
             Debug.Log("Cycle !");
         }
         Debug.Log("Can't" + MethodBase.GetCurrentMethod().Name);
         
     }
-    public void Shuffle<T>(List<T> list)
+    public void Shuffle()
     {
-        for ( int i = 0; i < list.Count; i++ )
+        int count = deck.childCount;
+        List<Transform> childList = new List<Transform>(count);
+
+        for (int i = 0; i < count; i++) {childList.Add(deck.GetChild(i));}
+        for (int i = 0; i < count; i++)
         {
-            int k = Random.Range(0, list.Count);
-            T value = list[i];  
-            list[i] = list[k];  
-            list[k] = value;  
+            int randomIndex = Random.Range(i, count);
+            Transform temp = childList[i];
+            childList[i] = childList[randomIndex];
+            childList[randomIndex] = temp;
+        }
+        for (int i = 0; i < count; i++)
+        {
+            childList[i].SetSiblingIndex(i);
         }
     }
 
-    // Drawing Card System
 
-    public void DrawCard(string method)
-    {
-        Transform fromTr = cardsToDraw;
-        Transform toTr = addedCards;
-        switch (method)
-        {
-            case "0":
-                if (fromTr.childCount != 0)
-                {
-                    GameObject card = fromTr.GetChild(fromTr.childCount-1).gameObject;
-                    card.transform.parent = toTr.transform;
-                    MoveCard(card, toTr, false);
-                    Debug.Log(MethodBase.GetCurrentMethod().Name);
-                }
-                else
-                {
-                    Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-                }
-            break;
-            
-
-        }
-    }
-
-    public void DrawTopCard()
-    {
-        Transform fromTr = cardsToDraw;
-        Transform toTr = addedCards;
-
-        if (fromTr.childCount != 0)
-        {
-            GameObject card = fromTr.GetChild(fromTr.childCount-1).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, false);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
-        }
-        else
-        {
-            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-        }
-    }
-    public void DrawBottomCard()
-    {
-        Transform fromTr = cardsToDraw;
-        Transform toTr = addedCards;
-
-        if (fromTr.childCount != 0)
-        {
-
-            GameObject card = fromTr.GetChild(0).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, false);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
-        }
-        else
-        {
-            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-        }
-    }
-    public void DrawRandomCard()
-    {
-        Transform fromTr = cardsToDraw;
-        Transform toTr = addedCards;
-
-        if (fromTr.childCount != 0)
-        {
-            int randomIndex = Random.Range(0, fromTr.childCount);
-            GameObject card = fromTr.GetChild(randomIndex).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, false);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
-        }
-        else
-        {
-            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-        }
-    }
-
-    public void DiscardTopCard()
-    {
-        Transform fromTr = addedCards;
-        Transform toTr = discardedCards;
-
-        if (fromTr.childCount != 0)
-        {
-            GameObject card = fromTr.GetChild(fromTr.childCount-1).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, true);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
-        }
-        else
-        {
-            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-        }
-    }
-    public void DiscardBottomCard()
-    {
-        Transform fromTr = addedCards;
-        Transform toTr = discardedCards;
-
-        if (fromTr.childCount != 0)
-        {
-            GameObject card = fromTr.GetChild(0).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, true);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
-        }
-        else
-        {
-            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-        }
-    }
-    public void DiscardRandomCard()
-    {
-        Transform fromTr = addedCards;
-        Transform toTr = discardedCards;
-
-        if (fromTr.childCount != 0)
-        {
-            int randomIndex = Random.Range(0, fromTr.childCount);
-            GameObject card = fromTr.GetChild(randomIndex).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, true);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
-        }
-        else
-        {
-            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-        }
-    }
     
-    public void RemoveTopCard()
+    // Only Top Draw
+    public IEnumerator DrawPerTurn(int count)
     {
-        Transform fromTr = addedCards;
-        Transform toTr = removedCards;
-
-        if (fromTr.childCount != 0)
+        for (int i = 0; i < count; i++)
         {
-            GameObject card = fromTr.GetChild(fromTr.childCount-1).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, true);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
+            DrawCard(0);
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    public void DiscardCard(int way)
+    {
+        Transform fromTr = hand;
+        Transform toTr = discard;
+
+        GameObject card = null;
+        int randomIndex = Random.Range(0, count);
+
+        if (count != 0)
+        {
+            switch (way)
+            {
+                case 0: {card = fromTr.GetChild(count-1).gameObject;} 
+                        {card.transform.parent = toTr.transform;} break;
+                case 1: {card = fromTr.GetChild(0).gameObject;} 
+                        {card.transform.parent = toTr.transform;} break;                
+                case 2: {card = fromTr.GetChild(randomIndex).gameObject;}
+                        {card.transform.parent = toTr.transform;} break;
+            }
+            // CardAlignment();
         }
         else
         {
             Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
         }
     }
-    public void RemoveBottomCard()
+    public void ExtinctCard(int way)
     {
-        Transform fromTr = addedCards;
-        Transform toTr = removedCards;       
+        Transform fromTr = hand;
+        Transform toTr = extinct;
 
-        if (addedCards.childCount != 0)
+        GameObject card = null;
+        int randomIndex = Random.Range(0, count);
+
+        if (count != 0)
         {
-            GameObject card = addedCards.GetChild(0).gameObject;
-            card.transform.parent = removedCards.transform;
-            MoveCard(card, removedCards, true);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
+            switch (way)
+            {
+                case 0: {card = fromTr.GetChild(count-1).gameObject;} 
+                        {card.transform.parent = toTr.transform;} break;
+                case 1: {card = fromTr.GetChild(0).gameObject;} 
+                        {card.transform.parent = toTr.transform;} break;                
+                case 2: {card = fromTr.GetChild(randomIndex).gameObject;}
+                        {card.transform.parent = toTr.transform;} break;
+            }
+            // CardAlignment();
         }
         else
         {
             Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
         }
     }
-    public void RemoveRandomCard()
-    {
-        Transform fromTr = addedCards;
-        Transform toTr = removedCards;
-
-        if (fromTr.childCount != 0)
-        {
-            int randomIndex = Random.Range(0, fromTr.childCount);
-            GameObject card = fromTr.GetChild(randomIndex).gameObject;
-            card.transform.parent = toTr.transform;
-            MoveCard(card, toTr, true);
-            Debug.Log(MethodBase.GetCurrentMethod().Name);
-        }
-        else
-        {
-            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
-        }
-    }
-
-
 
     // Animation & Alignment
-
     [Header("DoTween")]
     public float doMoveSec;
     public float doScaleSec;
 
-    public void MoveCard(GameObject obj, Transform to, bool disappear)
-    {
-        var temp = 1f;
-        if (disappear == true)
-        {
-            temp = 0f;
-        }
-        obj.transform.DOMove(to.position, doMoveSec).SetEase(Ease.Linear);
-        obj.transform.DOScale(temp, doScaleSec).SetEase(Ease.Linear);
-    }
-    public void MoveTransform(PRS prs, bool useDotween, float dotweenSec = 0)
+
+
+    public void Card_Move(GameObject card, Vector3 pos, bool useDotween, float dotweenTime)
     {
         if (useDotween)
         {
-            transform.DOMove(prs.pos, dotweenSec);
-            transform.DORotateQuaternion(prs.rot, dotweenSec);
-            transform.DOScale(prs.scale, dotweenSec);
+            card.transform.DOMove(pos, dotweenTime);
         }
         else
         {
-            transform.position = prs.pos;
-            transform.rotation = prs.rot;
-            transform.localScale = prs.scale;
+            card.transform.position = pos;
         }
     }
-    public void SetSortingLayer()
+
+    public void Card_Sorting()
     {
-        if (addedCards.childCount != 0)
+        if (hand.childCount != 0)
         {
-            for (int i = 0; i < addedCards.childCount; i++)
+            for (int i = 0; i < hand.childCount; i++)
             {
-                var sort = addedCards.GetChild(i).GetComponent<SortingGroup>();
+                var sort = hand.GetChild(i).GetComponent<SortingGroup>();
                 sort.sortingOrder = i;
             }            
         }
-        Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
+        else
+        {
+            Debug.Log("Can't " + MethodBase.GetCurrentMethod().Name);
+        }   
     }
-    public void CardAlignment()
+
+    public List<Vector3> Card_Alignment()
     {
-        List<PRS> originPRSs = new List<PRS>();
-
-        originPRSs = RoundAlignment(addedCardsLeft, addedCardsRight, addedCards.childCount, 0.5f, Vector3.one * 1.5f);
-        
-        var addedCardsCount = addedCards.childCount;
-        for (int i = 0; i < addedCardsCount; i++)
+        List<Vector3> list = new List<Vector3>();
+        var count = hand.childCount;
+        if (count != 0)
         {
-            var card = addedCards.GetChild(i).gameObject.GetComponent<UseableCard>();
-            card.originPRS = originPRSs[i];
-            card.MoveTransform(card.originPRS, true, 1f);
-        }
-    }
-    private List<PRS> RoundAlignment(Transform leftTr, Transform rightTr, int objCount, float height, Vector3 scale)
-    {
-        float[] objLerps = new float[objCount];
-        List<PRS> results = new List<PRS>(objCount);
-
-        switch (objCount)
-        {
-            case 1: objLerps = new float[] {0.5f}; break;
-            case 2: objLerps = new float[] {0.27f, 0.73f}; break;
-            case 3: objLerps = new float[] {0.1f, 0.5f, 0,9f}; break;
-            default :
-                float interval = 1f / (objCount - 1);
-                for (int i = 0; i < objCount; i++)
-                    objLerps[i] = interval * i;
-                break;
-        }
-
-        for (int i = 0; i < objCount; i++)
-        {
-            var targetPos = Vector3.Lerp(leftTr.position, rightTr.position, objLerps[i]);
-            var targetRot = Quaternion.identity;
-            if (objCount >= 4)
+            switch (count)
             {
-                float curve = Mathf.Sqrt(MathF.Pow(height, 2) - MathF.Pow(objLerps[i] - 0.5f, 2));
-                curve = height >= 0 ? curve : -curve;
-                targetPos.y += curve;
-                targetRot = Quaternion.Slerp(leftTr.rotation, rightTr.rotation, objLerps[i]);
+                case 1:
+                    list.Add(Vector3.zero);
+                    break;
+                case 2:
+                    list.Add(new Vector3(-0.5f, 0f, 0f));
+                    list.Add(new Vector3(0.5f, 0f, 0f));
+                    break;
+                case 3:
+                    list.Add(new Vector3(-1f, 0f, 0f));
+                    list.Add(new Vector3(0f, 0f, 0f));
+                    list.Add(new Vector3(1f, 0f, 0f));
+                    break;
+                case 4:
+                    list.Add(new Vector3(-1.5f, 0f, 0f));
+                    list.Add(new Vector3(-0.5f, 0f, 0f));
+                    list.Add(new Vector3(0.5f, 0f, 0f));
+                    list.Add(new Vector3(1.5f, 0f, 0f));
+                    break;
+                case 5:
+                    list.Add(new Vector3(-2f, 0f, 0f));
+                    list.Add(new Vector3(-1f, 0f, 0f));
+                    list.Add(new Vector3(0f, 0f, 0f));
+                    list.Add(new Vector3(1f, 0f, 0f));
+                    list.Add(new Vector3(2f, 0f, 0f));
+                    break;
+                case 6:
+                    list.Add(new Vector3(-2.5f, 0f, 0f));
+                    list.Add(new Vector3(-1.5f, 0f, 0f));
+                    list.Add(new Vector3(-0.5f, 0f, 0f));
+                    list.Add(new Vector3(0.5f, 0f, 0f));
+                    list.Add(new Vector3(1.5f, 0f, 0f));
+                    list.Add(new Vector3(2.5f, 0f, 0f));
+                    break;
+                case 7:
+                    list.Add(new Vector3(-3f, 0f, 0f));
+                    list.Add(new Vector3(-2f, 0f, 0f));
+                    list.Add(new Vector3(-1f, 0f, 0f));
+                    list.Add(new Vector3(0f, 0f, 0f));
+                    list.Add(new Vector3(1f, 0f, 0f));
+                    list.Add(new Vector3(2f, 0f, 0f));
+                    list.Add(new Vector3(3f, 0f, 0f));
+                    break;
+                case 8:
+                    list.Add(new Vector3(-3.5f, 0f, 0f));
+                    list.Add(new Vector3(-2.5f, 0f, 0f));
+                    list.Add(new Vector3(-1.5f, 0f, 0f));
+                    list.Add(new Vector3(-0.5f, 0f, 0f));
+                    list.Add(new Vector3(0.5f, 0f, 0f));
+                    list.Add(new Vector3(1.5f, 0f, 0f));
+                    list.Add(new Vector3(2.5f, 0f, 0f));
+                    list.Add(new Vector3(3.5f, 0f, 0f));
+                    break;
+                case 9:
+                    list.Add(new Vector3(-4f, 0f, 0f));
+                    list.Add(new Vector3(-3f, 0f, 0f));
+                    list.Add(new Vector3(-2f, 0f, 0f));
+                    list.Add(new Vector3(-1f, 0f, 0f));
+                    list.Add(new Vector3(0f, 0f, 0f));
+                    list.Add(new Vector3(1f, 0f, 0f));
+                    list.Add(new Vector3(2f, 0f, 0f));
+                    list.Add(new Vector3(3f, 0f, 0f));
+                    list.Add(new Vector3(4f, 0f, 0f));
+                    break;
+                case 10:
+                    list.Add(new Vector3(-4.5f, 0f, 0f));
+                    list.Add(new Vector3(-3.5f, 0f, 0f));
+                    list.Add(new Vector3(-2.5f, 0f, 0f));
+                    list.Add(new Vector3(-1.5f, 0f, 0f));
+                    list.Add(new Vector3(-0.5f, 0f, 0f));
+                    list.Add(new Vector3(0.5f, 0f, 0f));
+                    list.Add(new Vector3(1.5f, 0f, 0f));
+                    list.Add(new Vector3(2.5f, 0f, 0f));
+                    list.Add(new Vector3(3.5f, 0f, 0f));
+                    list.Add(new Vector3(4.5f, 0f, 0f));
+                    break;
             }
-            results.Add(new PRS(targetPos, targetRot, scale));
         }
-        return results;
+        return list;
     }
 }

@@ -40,16 +40,10 @@ public class BattleManager : MonoBehaviour
 
 
 
-
-
-    private void Awake()
-    {
-
-    }
-
     private void Start()
     {
-
+        BattleSetUp();
+        StartCoroutine(PlayerTurn());
     }
 
     private void Update()
@@ -59,61 +53,28 @@ public class BattleManager : MonoBehaviour
 
 
 
-
-
-    public IEnumerator BattleStart()
+    public NotificationPanel notifi;
+    public void BattleSetUp()
     {
         GameManager.Instance.isLoading = true;
-        OptionSetUp();
-        CardManager.Instance.DeckSetUp();
 
-        for (int i = 0; i < GameManager.Instance.startCardCount; i++)
-        {
-            yield return GameManager.Instance.delayStartGame;
-            CardManager.Instance.DrawRandomCard();
-        }
-        
-        StartCoroutine(Co_StartTurn());
+        // 플레이어와 에너미의 캐릭터 카드를 배치
+
+        // CardManager.Instance.DeckSetUp();
+
+        CardManager.Instance.Shuffle();
     }
 
-    private void OptionSetUp()
-    {
-        if (GameManager.Instance.fastMode == true)
-        {
-            GameManager.Instance.delayStartGame = new WaitForSeconds(0.05f);
-            GameManager.Instance.delayStartTurn = new WaitForSeconds(0.07f);
-        }
-
-        // switch (eTurnMode)
-        // {
-        //     case ETurnMode.Player:
-        //         isPlayerTurn = true;
-        //         break;
-        //     case ETurnMode.Enemy:
-        //         isPlayerTurn = false;
-        //         break;
-        //     case ETurnMode.Random:
-        //         isPlayerTurn = Random.Range(0, 2) == 0;
-        //         break;
-        // }
-    }
-
-
-
-    private IEnumerator Co_StartTurn()
+    public IEnumerator PlayerTurn()
     {
         GameManager.Instance.isLoading = true;
-        if (GameManager.Instance.isPlayerTurn)
-            GameManager.Instance.Notification("Player Turn");
-
-        yield return GameManager.Instance.delayStartTurn;
-        CardManager.Instance.DrawRandomCard();
-        yield return GameManager.Instance.delayStartTurn;
+        GameManager.Instance.isPlayerTurn = true;
+        yield return new WaitForSeconds(0.5f);
+        notifi.Show("Player Turn");
+        yield return new WaitForSeconds(0.5f);
+        StartCoroutine(CardManager.Instance.DrawPerTurn(GameManager.Instance.drawCountPerTurn));
         GameManager.Instance.isLoading = false;
     }
 
-    public void EndTurn()
-    {
-        GameManager.Instance.isPlayerTurn = !GameManager.Instance.isPlayerTurn;
-    }
+
 }
